@@ -22,4 +22,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0.0"
   spec.add_development_dependency "rspec", "~> 2.12.0"
   spec.add_development_dependency "rake-compiler", "~> 0.8.0"
+  spec.add_development_dependency "pry"
 end
