@@ -1,4 +1,61 @@
+// os identification: http://sourceforge.net/p/predef/wiki/OperatingSystems/
+
+#include <time.h>
+#include <sys/time.h>
 #include <ruby.h>
+
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#include <sys/resource.h>
+#endif
+
+static int already_hooked = 0;
+static unsigned int line_number = 0;
+static const char *file_name;
+static VALUE thread_id;
+static FILE *output_file;
+
+// cpu clock value in microseconds
+static double
+inside_job_cpu_clock_value()
+{
+#ifdef __MACH__
+  // ru_utime gives user mode time
+  // ru_stime gives system mode time
+  // can get potentially helpful stuff like io block counts
+  // supported by all unix-y oses
+  struct rusage rusage;
+  if (getrusage(RUSAGE_SELF, &rusage) != -1)
+    return (double)rusage.ru_utime.tv_sec * 1000000.0 + (double)rusage.ru_utime.tv_usec;
+#else
+  timespec cpu_clock;
+  if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_clock) != -1)
+    return (double)cpu_clock.tv_sec * 1000000.0 + (double)cpu_clock.tv_nsec / 1000.0;
+#endif
+
+  return -1.0;
+}
+
+// system clock value in microseconds
+static double
+inside_job_wall_clock_value()
+{
+#ifdef __MACH__
+  clock_serv_t cclock;
+  mach_timespec_t mts;
+  if (host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock) != -1)
+    if (clock_get_time(cclock, &mts) != -1)
+      if (mach_port_deallocate(mach_task_self(), cclock) != -1)
+        return (double)mts.tv_sec * 1000000.0 + (double)mts.tv_nsec / 1000.0;
+#else
+  timespec wall_clock;
+  if (clock_gettime(CLOCK_MONOTONIC, &wall_clock) != -1)
+    return (double)wall_clcok.tv_sec * 1000000.0 + (double)wall_clock.tv_nsec / 1000.0;
+#endif
+
+  return -1.0;
+}
 
 static void
 inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID mid, VALUE klass)
@@ -55,7 +112,9 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
                            file_name,
                            line_number,
                            rb_class2name(klass),
-                           rb_id2name(mid));
+                           rb_id2name(mid),
+                           inside_job_wall_clock_value(),
+                           inside_job_cpu_clock_value());
 
       break;
     }
@@ -66,7 +125,9 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
                            file_name,
                            line_number,
                            rb_class2name(klass),
-                           rb_id2name(mid));
+                           rb_id2name(mid),
+                           inside_job_wall_clock_value(),
+                           inside_job_cpu_clock_value());
 
       break;
     }
