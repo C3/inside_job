@@ -24,7 +24,7 @@ ruby_inside_job_stop(VALUE self)
   return Qnil;
 }
 
-void Init_inside_job(void)
+void Init_inside_job_ext(void)
 {
   VALUE klass = rb_define_module("InsideJob");
   rb_define_singleton_method(klass, "start", ruby_inside_job_start, 0);

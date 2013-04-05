@@ -1,3 +1,3 @@
 require 'mkmf'
 
-create_makefile('inside_job/inside_job')
+create_makefile('inside_job_ext')
