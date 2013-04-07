@@ -16,7 +16,7 @@ static const char *file_name;
 static VALUE thread_id;
 static FILE *output_file;
 
-// cpu clock value in microseconds
+// cpu clock value in nanoseconds
 static double
 inside_job_cpu_clock_value()
 {
@@ -27,17 +27,17 @@ inside_job_cpu_clock_value()
   // supported by all unix-y oses
   struct rusage rusage;
   if (getrusage(RUSAGE_SELF, &rusage) != -1)
-    return (double)rusage.ru_utime.tv_sec * 1000000.0 + (double)rusage.ru_utime.tv_usec;
+    return ((double)rusage.ru_utime.tv_sec * 1000000000.0) + ((double)rusage.ru_utime.tv_usec * 1000.0);
 #else
   timespec cpu_clock;
   if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_clock) != -1)
-    return (double)cpu_clock.tv_sec * 1000000.0 + (double)cpu_clock.tv_nsec / 1000.0;
+    return ((double)cpu_clock.tv_sec * 1000000000.0) + (double)cpu_clock.tv_nsec;
 #endif
 
   return -1.0;
 }
 
-// system clock value in microseconds
+// system clock value in nanoseconds
 static double
 inside_job_wall_clock_value()
 {
@@ -47,11 +47,11 @@ inside_job_wall_clock_value()
   if (host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock) != -1)
     if (clock_get_time(cclock, &mts) != -1)
       if (mach_port_deallocate(mach_task_self(), cclock) != -1)
-        return (double)mts.tv_sec * 1000000.0 + (double)mts.tv_nsec / 1000.0;
+        return ((double)mts.tv_sec * 1000000000.0) + (double)mts.tv_nsec;
 #else
   timespec wall_clock;
   if (clock_gettime(CLOCK_MONOTONIC, &wall_clock) != -1)
-    return (double)wall_clcok.tv_sec * 1000000.0 + (double)wall_clock.tv_nsec / 1000.0;
+    return ((double)wall_clcok.tv_sec * 1000000000.0) + (double)wall_clock.tv_nsec;
 #endif
 
   return -1.0;
