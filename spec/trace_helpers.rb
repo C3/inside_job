@@ -1,49 +1,74 @@
 module TraceHelpers
 
-  def spying_on(&block)
+  def trace_for(&block)
     output_file = Tempfile.new('inside_job')
 
     InsideJob.start(output_file.path)
     yield
     InsideJob.stop
 
-    result = output_file.read
+    trace = Trace.new(output_file.read)
     output_file.close
-    result
+    trace
   end
 
 end
 
-# TODO: fix the output on assertion failure, it's currently useless
-RSpec::Matchers.define :produce_trace do |expected|
+RSpec::Matchers.define :have_produced_lines do |expected|
   match do |actual|
-    line_format = /(return|call): (.*):(\d+) (\w+) (\w+) (.*) (.*)/
+    # the trace will contain the return from InsideJob.start and the call
+    # from InsideJob.stop, the line/file of InsideJob.start isn't consistent
+    # between runs
+    # seems to be (null):0 for the first run, trace_helpers.rb:8 after?!!?
+    # delete them for comparing the desired parts
+    actual.lines[1..-2].should == expected
+  end
 
-    trace_lines = actual.each_line.collect do |line|
+  failure_message_for_should do |actual|
+    <<-EOF
+  expected:
+    #{PP.pp actual, ""}
+  to match:
+    #{PP.pp expected, ""}
+    EOF
+  end
+
+  failure_message_for_should_not do |acutal|
+  end
+end
+
+RSpec::Matchers.define :be_always_increasing do
+  match do |actual|
+    actual.sort.should eql actual
+  end
+
+  failure_message_for_should do |actual|
+    "expected #{actual} to be always increasing"
+  end
+
+  failure_message_for_should_not do |acutal|
+    "expected #{actual} to not be always increasing"
+  end
+end
+
+class Trace
+
+  attr :lines, :wall_times, :cpu_times
+
+  def initialize(trace)
+    line_format = /(return|call): (.+):(\d+) (.+) (\w+) (.*) (.*)/
+
+    @lines = trace.each_line.collect do |line|
       line =~ line_format
 
       {$1.to_sym => {:file => File.basename($2),
                      :line => $3.to_i,
                      :class => $4,
                      :method => $5}}
-    end
+     end
 
-    wall_clock_values = actual.each_line.collect { |line| line =~ line_format; $6.to_f }
-    cpu_clock_values = actual.each_line.collect { |line| line =~ line_format; $7.to_f }
+     @wall_times = trace.each_line.collect { |line| line =~ line_format; $6.to_f }
+     @cpu_times = trace.each_line.collect { |line| line =~ line_format; $7.to_f }
+   end
 
-    # assert the captured call/returns match
-    # add lines from the spec helper so the spec doesn't have to assert them itself
-    trace_lines.should =~ [{:return => {:file => '(null)',
-                                        :line => 0,
-                                        :class => 'InsideJob',
-                                        :method => 'start'}},
-                             {:call => {:file => 'trace_helpers.rb',
-                                        :line => 8,
-                                        :class => 'InsideJob',
-                                        :method => 'stop'}}] + expected
-
-    # assert that the call/return timings are always increasing
-    wall_clock_values.sort.should eql wall_clock_values
-    cpu_clock_values.sort.should eql cpu_clock_values
-  end
 end
