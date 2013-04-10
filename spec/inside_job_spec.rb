@@ -32,4 +32,32 @@ describe InsideJob do
     )
   end
 
+  describe "class names" do
+
+    it "fetches the class name ignoring inspect overrides" do
+      class Special
+        def omg
+          "omg"
+        end
+
+        def self.inspect
+          " thing ".strip
+        end
+      end
+
+      trace_for {
+        Special.new.omg
+      }.should produce(
+        call_tree do
+          method_call "Class", "new", "inside_job_spec.rb", 49 do
+            method_call "BasicObject", "initialize", "inside_job_spec.rb", 49 do
+              method_call "Special", "omg", "inside_job_spec.rb", 49
+            end
+          end
+        end
+      )
+    end
+
+  end
+
 end

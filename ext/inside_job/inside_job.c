@@ -57,6 +57,37 @@ inside_job_wall_clock_value()
   return -1.0;
 }
 
+const char *
+inside_job_class_name(VALUE klass)
+{
+  if (klass)
+  {
+    VALUE target_klass;
+
+    // if klass is a module proxy class, fetch the actual klass that provided the method
+    if (TYPE(klass) == T_ICLASS)
+    {
+      target_klass = RBASIC(klass)->klass;
+    }
+
+    // if klass is a singleton (i.e. the eigenclass) then self will be the actual class
+    if (FL_TEST(klass, FL_SINGLETON))
+    {
+      target_klass = rb_iv_get(klass, "__attached__");
+    }
+    else
+    {
+      target_klass = klass;
+    }
+
+    return rb_class2name(klass);
+  }
+  else
+  {
+    return "unknown";
+  }
+}
+
 static void
 inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID mid, VALUE klass)
 {
@@ -78,21 +109,6 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
     rb_frame_method_id_and_class(&mid, &klass);
   }
 
-  // as per thread.c#4484
-  if (klass)
-  {
-    // if klass is a module proxy class, fetch the actual klass that provided the method
-    if (TYPE(klass) == T_ICLASS)
-    {
-      klass = RBASIC(klass)->klass;
-    }
-    // if klass is a singleton (i.e. the eigenclass) then self will be the actual class
-    else if (FL_TEST(klass, FL_SINGLETON))
-    {
-      klass = rb_iv_get(klass, "__attached__");
-    }
-  }
-
   switch(event)
   {
     case RUBY_EVENT_LINE:
@@ -111,7 +127,7 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
       fprintf(output_file, "call: %s:%d %s %s %E %E\n",
                            file_name,
                            line_number,
-                           rb_class2name(klass),
+                           inside_job_class_name(klass),
                            rb_id2name(mid),
                            inside_job_wall_clock_value(),
                            inside_job_cpu_clock_value());
@@ -124,7 +140,7 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
       fprintf(output_file, "return: %s:%d %s %s %E %E\n",
                            file_name,
                            line_number,
-                           rb_class2name(klass),
+                           inside_job_class_name(klass),
                            rb_id2name(mid),
                            inside_job_wall_clock_value(),
                            inside_job_cpu_clock_value());
