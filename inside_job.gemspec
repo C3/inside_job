@@ -23,4 +23,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 2.12.0"
   spec.add_development_dependency "rake-compiler", "~> 0.8.0"
   spec.add_development_dependency "pry"
+  spec.add_development_dependency "rubytree"
 end
