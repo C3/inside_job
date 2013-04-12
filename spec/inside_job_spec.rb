@@ -27,7 +27,7 @@ describe InsideJob do
       " thing ".strip
     }.should produce(
       call_tree do
-        method_call "String", "strip", "inside_job_spec.rb", 27
+        method_call "String", "strip"
       end
     )
   end
@@ -49,9 +49,9 @@ describe InsideJob do
         Special.new.omg
       }.should produce(
         call_tree do
-          method_call "Class", "new", "inside_job_spec.rb", 49 do
-            method_call "BasicObject", "initialize", "inside_job_spec.rb", 49 do
-              method_call "Special", "omg", "inside_job_spec.rb", 49
+          method_call "Class", "new" do
+            method_call "BasicObject", "initialize" do
+              method_call "Special", "omg"
             end
           end
         end

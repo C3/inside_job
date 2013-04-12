@@ -11,8 +11,6 @@
 #endif
 
 static int already_hooked = 0;
-static unsigned int line_number = 0;
-static const char *file_name;
 static VALUE thread_id;
 static FILE *output_file;
 
@@ -103,19 +101,9 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
   }
 
   switch(event) {
-    case RUBY_EVENT_LINE:
-      // grab the line/file we're currently up to
-      // when the call event comes in the line/file will be the definition of the method
-      // not the line that actually called the method
-      line_number = rb_sourceline();
-      file_name = rb_sourcefile();
-
-      break;
     case RUBY_EVENT_CALL:
     case RUBY_EVENT_C_CALL:
-      fprintf(output_file, "call: %s:%d %s %s %E %E\n",
-                           file_name,
-                           line_number,
+      fprintf(output_file, "call: %s %s %E %E\n",
                            inside_job_class_name(klass),
                            rb_id2name(mid),
                            inside_job_wall_clock_value(),
@@ -124,9 +112,7 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
       break;
     case RUBY_EVENT_RETURN:
     case RUBY_EVENT_C_RETURN:
-      fprintf(output_file, "return: %s:%d %s %s %E %E\n",
-                           file_name,
-                           line_number,
+      fprintf(output_file, "return: %s %s %E %E\n",
                            inside_job_class_name(klass),
                            rb_id2name(mid),
                            inside_job_wall_clock_value(),
@@ -138,15 +124,14 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
   already_hooked--;
 }
 
-
 static VALUE
 ruby_inside_job_start(VALUE self, VALUE output_file_name)
 {
   output_file = fopen(StringValueCStr(output_file_name), "w");
 
   rb_add_event_hook(inside_job_process_event_hook, RUBY_EVENT_CALL | RUBY_EVENT_RETURN |
-                                                   RUBY_EVENT_C_CALL | RUBY_EVENT_C_RETURN |
-                                                   RUBY_EVENT_LINE, Qnil);
+                                                   RUBY_EVENT_C_CALL | RUBY_EVENT_C_RETURN,
+                                                   Qnil);
 
   return Qnil;
 }
