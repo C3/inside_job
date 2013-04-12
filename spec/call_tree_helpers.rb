@@ -15,29 +15,31 @@ module CallTreeHelpers
     # have to assert them
     lines = output_file.readlines[1..-2]
 
-    line_format = /(return|call): (.+) (\w+) (.*) (.*)/
+    float_regexp = /\d+(\.\d+)?([eE][+-]?\d+)?/
+    call_line_format = /call: (.+) (\w+) (#{float_regexp}) (#{float_regexp})/
+    return_line_format = /return: (#{float_regexp}) (#{float_regexp})/
 
     tree = CallTree.new.root_node
 
     parent = tree
     old_parent = nil
     lines.each do |line|
-      line =~ line_format
-
-      if $1 == 'call'
-        call_node = MethodCall.build(parent, $2, $3)
-        call_node.content.wall_start = $4.to_f
-        call_node.content.cpu_start = $5.to_f
+      if line =~ call_line_format
+        call_node = MethodCall.build(parent, $1, $2)
+        call_node.content.wall_start = $3.to_f
+        call_node.content.cpu_start = $4.to_f
 
         old_parent = parent
         parent = call_node
-      else
+      elsif line =~ return_line_format
         call_node = parent.content
-        call_node.wall_end = $4.to_f
-        call_node.cpu_end = $5.to_f
+        call_node.wall_end = $1.to_f
+        call_node.cpu_end = $2.to_f
 
         parent = old_parent
         old_parent = call_node.parent
+      else
+        raise "found a call tree line that wasn't call/return?!?!?!!?"
       end
     end
 

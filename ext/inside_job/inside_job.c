@@ -112,9 +112,7 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
       break;
     case RUBY_EVENT_RETURN:
     case RUBY_EVENT_C_RETURN:
-      fprintf(output_file, "return: %s %s %E %E\n",
-                           inside_job_class_name(klass),
-                           rb_id2name(mid),
+      fprintf(output_file, "return: %E %E\n",
                            inside_job_wall_clock_value(),
                            inside_job_cpu_clock_value());
 
