@@ -60,30 +60,24 @@ inside_job_wall_clock_value()
 const char *
 inside_job_class_name(VALUE klass)
 {
-  if (klass)
-  {
+  if (klass) {
     VALUE target_klass;
 
     // if klass is a module proxy class, fetch the actual klass that provided the method
     if (TYPE(klass) == T_ICLASS)
-    {
       target_klass = RBASIC(klass)->klass;
-    }
 
     // if klass is a singleton (i.e. the eigenclass) then self will be the actual class
-    if (FL_TEST(klass, FL_SINGLETON))
-    {
+    if (FL_TEST(klass, FL_SINGLETON)) {
       target_klass = rb_iv_get(klass, "__attached__");
     }
-    else
-    {
+    else {
       target_klass = klass;
     }
 
     return rb_class2name(klass);
   }
-  else
-  {
+  else {
     return "unknown";
   }
 }
@@ -104,15 +98,12 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
   thread_id = rb_obj_id(rb_thread_current());
 
   // we need to lookup this information for things other than c call/return?
-  if (event != RUBY_EVENT_C_CALL && event != RUBY_EVENT_C_RETURN)
-  {
+  if (event != RUBY_EVENT_C_CALL && event != RUBY_EVENT_C_RETURN) {
     rb_frame_method_id_and_class(&mid, &klass);
   }
 
-  switch(event)
-  {
+  switch(event) {
     case RUBY_EVENT_LINE:
-    {
       // grab the line/file we're currently up to
       // when the call event comes in the line/file will be the definition of the method
       // not the line that actually called the method
@@ -120,10 +111,8 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
       file_name = rb_sourcefile();
 
       break;
-    }
     case RUBY_EVENT_CALL:
     case RUBY_EVENT_C_CALL:
-    {
       fprintf(output_file, "call: %s:%d %s %s %E %E\n",
                            file_name,
                            line_number,
@@ -133,10 +122,8 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
                            inside_job_cpu_clock_value());
 
       break;
-    }
     case RUBY_EVENT_RETURN:
     case RUBY_EVENT_C_RETURN:
-    {
       fprintf(output_file, "return: %s:%d %s %s %E %E\n",
                            file_name,
                            line_number,
@@ -146,7 +133,6 @@ inside_job_process_event_hook(rb_event_flag_t event, VALUE data, VALUE self, ID 
                            inside_job_cpu_clock_value());
 
       break;
-    }
   }
 
   already_hooked--;
