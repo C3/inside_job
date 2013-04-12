@@ -144,10 +144,24 @@ ruby_inside_job_stop(VALUE self)
   return Qnil;
 }
 
+static VALUE
+ruby_inside_job_trace(VALUE self, VALUE output_file_name)
+{
+  if (!rb_block_given_p())
+    rb_raise(rb_eArgError, "Expected block");
+
+  ruby_inside_job_start(self, output_file_name);
+  rb_yield(Qnil);
+  ruby_inside_job_stop(self);
+
+  return Qnil;
+}
+
 void Init_inside_job_ext(void)
 {
   VALUE klass = rb_define_module("InsideJob");
   rb_define_singleton_method(klass, "start", ruby_inside_job_start, 1);
   rb_define_singleton_method(klass, "stop", ruby_inside_job_stop, 0);
+  rb_define_singleton_method(klass, "trace", ruby_inside_job_trace, 1);
 }
 

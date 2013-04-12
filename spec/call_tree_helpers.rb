@@ -6,9 +6,9 @@ module CallTreeHelpers
   def trace_for(&block)
     output_file = Tempfile.new('inside_job')
 
-    InsideJob.start(output_file.path)
-    yield
-    InsideJob.stop
+    InsideJob.trace(output_file.path) do
+      block.call
+    end
 
     # the trace will contain the return from InsideJob.start and the call
     # from InsideJob.stop, they'll always be there and we don't want to
