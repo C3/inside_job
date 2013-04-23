@@ -1,6 +1,10 @@
 // os identification: http://sourceforge.net/p/predef/wiki/OperatingSystems/
 
 #include <time.h>
+
+#ifdef __linux__
+#include <linux/time.h>
+#endif
 #include <sys/time.h>
 
 #ifdef __MACH__
@@ -22,7 +26,7 @@ inside_job_cpu_clock_value()
   if (getrusage(RUSAGE_SELF, &rusage) != -1)
     return ((double)rusage.ru_utime.tv_sec * 1000000000.0) + ((double)rusage.ru_utime.tv_usec * 1000.0);
 #else
-  timespec cpu_clock;
+  struct timespec cpu_clock;
   if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cpu_clock) != -1)
     return ((double)cpu_clock.tv_sec * 1000000000.0) + (double)cpu_clock.tv_nsec;
 #endif
@@ -42,9 +46,9 @@ inside_job_wall_clock_value()
       if (mach_port_deallocate(mach_task_self(), cclock) != -1)
         return ((double)mts.tv_sec * 1000000000.0) + (double)mts.tv_nsec;
 #else
-  timespec wall_clock;
+  struct timespec wall_clock;
   if (clock_gettime(CLOCK_MONOTONIC, &wall_clock) != -1)
-    return ((double)wall_clcok.tv_sec * 1000000000.0) + (double)wall_clock.tv_nsec;
+    return ((double)wall_clock.tv_sec * 1000000000.0) + (double)wall_clock.tv_nsec;
 #endif
 
   return -1.0;

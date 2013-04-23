@@ -4,6 +4,12 @@
 #include <msgpack.h>
 #include <signal.h>
 #include <stdlib.h>
+
+#ifdef __linux__
+#include <sys/types.h>
+#include <sys/wait.h>
+#endif
+
 #include "timing.h"
 
 static int already_hooked = 0;
