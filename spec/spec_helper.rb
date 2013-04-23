@@ -22,3 +22,5 @@ RSpec.configure do |config|
 
   config.include CallTreeHelpers
 end
+
+InsideJob.init
