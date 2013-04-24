@@ -1,0 +1,4 @@
+#ifndef SUBSCRIBER_H_INCLUDED
+#define SUBSCRIBER_H_INCLUDED
+VALUE ruby_inside_job_subscriber_init(VALUE inside_job_module);
+#endif
