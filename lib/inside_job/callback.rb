@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 class Callback
 
   def start_event(output_file_name)

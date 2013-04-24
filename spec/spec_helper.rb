@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'pry'
 require 'inside_job'
 require 'call_tree_helpers'

@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'spec_helper'
 
 describe InsideJob do
@@ -52,6 +53,26 @@ describe InsideJob do
           method_call "Class", "new" do
             method_call "BasicObject", "initialize" do
               method_call "Special", "omg"
+            end
+          end
+        end
+      )
+    end
+
+    it "handles unicode thingamabobs fine" do
+      class Love
+        def ❤
+         "☃"
+        end
+      end
+
+      trace_for {
+        Love.new.❤
+      }.should produce(
+        call_tree do
+          method_call "Class", "new" do
+            method_call "BasicObject", "initialize" do
+              method_call "Love", "❤"
             end
           end
         end

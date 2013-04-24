@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 RSpec::Matchers.define :produce do |expected|
   match do |actual|
     actual_names = actual.collect(&:name)

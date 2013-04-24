@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'mkmf'
 
 header_locations = %w(/opt/local/include /usr/local/include /usr/include)

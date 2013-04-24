@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'rubytree'
 require 'ostruct'
 
@@ -16,7 +17,7 @@ module CallTreeHelpers
     lines = output_file.readlines[1..-2]
 
     float_regexp = /\d+(\.\d+)?([eE][+-]?\d+)?/
-    call_line_format = /call: (.+) (\w+) (#{float_regexp}) (#{float_regexp})/
+    call_line_format = /call: (.+) (.+) (#{float_regexp}) (#{float_regexp})/
     return_line_format = /return: (#{float_regexp}) (#{float_regexp})/
 
     tree = CallTree.new.root_node

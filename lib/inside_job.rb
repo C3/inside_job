@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'inside_job_ext'
 require "inside_job/version"
 require "inside_job/callback"
