@@ -76,11 +76,11 @@ ruby_inside_job_handle_events(VALUE self, VALUE callback)
 
       int method = (int)message->via.u64;
 
-      if (method == EVENT_SYNC) {
+      if (method == INSIDE_JOB_EVENT_SYNC) {
         // discard, these are popped onto the pub/sub socket
         // during synchronisation
       }
-      else if (method == EVENT_START) {
+      else if (method == INSIDE_JOB_EVENT_START) {
         void *output_file_name = malloc(message[1].via.raw.size);
         memcpy(output_file_name, message[1].via.raw.ptr, message[1].via.raw.size);
 
@@ -88,10 +88,10 @@ ruby_inside_job_handle_events(VALUE self, VALUE callback)
 
         rb_funcall(callback, rb_intern("start_event"), 1, _output_file_name);
       }
-      else if (method == EVENT_STOP) {
+      else if (method == INSIDE_JOB_EVENT_STOP) {
         rb_funcall(callback, rb_intern("stop_event"), 0);
       }
-      else if (method == EVENT_CALL) {
+      else if (method == INSIDE_JOB_EVENT_CALL) {
         void *klass = malloc(message[1].via.raw.size);
         memcpy(klass, message[1].via.raw.ptr, message[1].via.raw.size);
         VALUE _klass = rb_str_new(klass, message[1].via.raw.size);
@@ -105,7 +105,7 @@ ruby_inside_job_handle_events(VALUE self, VALUE callback)
 
         rb_funcall(callback, rb_intern("call_event"), 4, _klass, _method, _wall_clock, _cpu_clock);
       }
-      else if (method == EVENT_RETURN) {
+      else if (method == INSIDE_JOB_EVENT_RETURN) {
         VALUE _wall_clock = DBL2NUM(message[1].via.dec);
         VALUE _cpu_clock = DBL2NUM(message[2].via.dec);
 
@@ -147,7 +147,7 @@ ruby_inside_job_wait_for_publisher(void)
     msgpack_object_array array = obj.via.array;
     int method = (int)array.ptr[0].via.u64;
 
-    if (method == EVENT_SYNC) {
+    if (method == INSIDE_JOB_EVENT_SYNC) {
       printf("received sync event\n");
     }
   }

@@ -64,7 +64,7 @@ ruby_inside_job_wait_for_subscriber(void)
       msgpack_sbuffer *buffer = msgpack_sbuffer_new();
       msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
       msgpack_pack_array(pk, 1);
-      msgpack_pack_uint16(pk, EVENT_SYNC);
+      msgpack_pack_uint16(pk, INSIDE_JOB_EVENT_SYNC);
 
       zmq_msg_t message;
       zmq_msg_init_data(&message, buffer->data, buffer->size, NULL, NULL);
@@ -118,7 +118,7 @@ inside_job_send_call_message(VALUE class_name, VALUE method_name)
   msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
 
   msgpack_pack_array(pk, 5);
-  msgpack_pack_uint16(pk, EVENT_CALL);
+  msgpack_pack_uint16(pk, INSIDE_JOB_EVENT_CALL);
   msgpack_pack_raw(pk, RSTRING_LEN(class_name));
   msgpack_pack_raw_body(pk, RSTRING_PTR(class_name), RSTRING_LEN(class_name));
   msgpack_pack_raw(pk, RSTRING_LEN(method_name));
@@ -143,7 +143,7 @@ inside_job_send_return_message(void)
   msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
 
   msgpack_pack_array(pk, 3);
-  msgpack_pack_uint16(pk, EVENT_RETURN);
+  msgpack_pack_uint16(pk, INSIDE_JOB_EVENT_RETURN);
   msgpack_pack_double(pk, inside_job_wall_clock_value());
   msgpack_pack_double(pk, inside_job_cpu_clock_value());
 
@@ -210,7 +210,7 @@ ruby_inside_job_publisher_start(VALUE self, VALUE output_file_name)
   msgpack_sbuffer *buffer = msgpack_sbuffer_new();
   msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
   msgpack_pack_array(pk, 2);
-  msgpack_pack_uint16(pk, EVENT_START);
+  msgpack_pack_uint16(pk, INSIDE_JOB_EVENT_START);
   msgpack_pack_raw(pk, RSTRING_LEN(output_file_name));
   msgpack_pack_raw_body(pk, output, RSTRING_LEN(output_file_name));
 
@@ -236,7 +236,7 @@ ruby_inside_job_publisher_stop(VALUE self)
   msgpack_sbuffer *buffer = msgpack_sbuffer_new();
   msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
   msgpack_pack_array(pk, 1);
-  msgpack_pack_uint16(pk, EVENT_STOP);
+  msgpack_pack_uint16(pk, INSIDE_JOB_EVENT_STOP);
 
   zmq_msg_t message;
   zmq_msg_init_data(&message, buffer->data, buffer->size, NULL, NULL);

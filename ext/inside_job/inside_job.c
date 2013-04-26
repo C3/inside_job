@@ -8,11 +8,11 @@
 char *endpoint;
 char *sync_endpoint;
 
-const int EVENT_SYNC = 88;
-const int EVENT_START = 1;
-const int EVENT_STOP = 2;
-const int EVENT_CALL = 3;
-const int EVENT_RETURN = 4;
+const int INSIDE_JOB_EVENT_SYNC = 88;
+const int INSIDE_JOB_EVENT_START = 1;
+const int INSIDE_JOB_EVENT_STOP = 2;
+const int INSIDE_JOB_EVENT_CALL = 3;
+const int INSIDE_JOB_EVENT_RETURN = 4;
 
 static void
 DeInit_inside_job_ext(void)
