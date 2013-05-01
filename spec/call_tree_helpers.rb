@@ -11,6 +11,9 @@ module CallTreeHelpers
       block.call
     end
 
+    # TODO: lol
+    sleep(0.2)
+
     # the trace will contain the return from InsideJob.start and the call
     # from InsideJob.stop, they'll always be there and we don't want to
     # have to assert them
