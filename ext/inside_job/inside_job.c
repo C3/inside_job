@@ -29,8 +29,10 @@ void Init_inside_job_ext(void)
   rb_define_singleton_method(klass, "stop", ruby_inside_job_publisher_stop, 0);
   rb_define_singleton_method(klass, "trace", ruby_inside_job_publisher_trace, 1);
 
-  asprintf(&endpoint, "ipc:///tmp/inside_job-%i", getpid());
-  asprintf(&sync_endpoint, "ipc:///tmp/inside_job-sync-%i", getpid());
+  if (asprintf(&endpoint, "ipc:///tmp/inside_job-%i", getpid()) == -1)
+    rb_raise(rb_eRuntimeError, "allocation of endpoint failed, out of memory?");
+  if (asprintf(&sync_endpoint, "ipc:///tmp/inside_job-sync-%i", getpid()) == -1)
+    rb_raise(rb_eRuntimeError, "allocation of sync_endpoint failed, out of memory?");
 
   ruby_inside_job_publisher_init(klass);
   ruby_inside_job_subscriber_init(klass);
